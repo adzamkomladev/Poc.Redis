@@ -24,7 +24,7 @@ public class UserRegisteredHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _db.Multiplexer.GetSubscriber().SubscribeAsync("RegisteredUser", async (channel, message) =>
+        await _db.Multiplexer.GetSubscriber().SubscribeAsync("UserRegistration", async (channel, message) =>
         {
             _logger.LogInformation("REGISTERED USER SUBSCRIBER EXECUTION");
             if (message.IsNullOrEmpty)
@@ -48,6 +48,7 @@ public class UserRegisteredHostedService : BackgroundService
         catch (Exception e)
         {
             var retries = (int)(await _db.StringGetAsync($"emails:retries:{user?.Id}"));
+            _logger.LogWarning("FAILED TO SEND AN EMAIL: {email} with retries of {retries}", user.Email, retries);
 
             if (retries > 3)
             {
@@ -56,7 +57,7 @@ public class UserRegisteredHostedService : BackgroundService
                 return;
             }
 
-            await _db.PublishAsync("RegisteredUser", message);
+            await _db.PublishAsync("UserRegistration", message);
             await _db.StringIncrementAsync($"email:retries:{user?.Id}", 1);
         }
     }

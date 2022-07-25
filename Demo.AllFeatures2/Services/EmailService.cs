@@ -18,6 +18,8 @@ public class EmailService : IEmailService
     public async Task SendEmailAsync(string email)
     {
         // Send Email
+        if (DateTime.Now.Second % 9 != 0 && DateTime.Now.Second % 9 != 5 && DateTime.Now.Second % 9 != 2) throw new Exception("Email failed to send!");
+
         _logger.LogInformation("EMAIL SENT TO: {email}", email);
 
         var emailLog = JsonSerializer.Serialize(new

@@ -1,0 +1,66 @@
+version: '3.7'
+
+# Set up all services
+services:
+  # First All Features App
+  api_one:
+    ## Get the image to use and set the container name
+    container_name: api_one
+
+    # State a dependancy on Redis working
+    depends_on:
+      - "redis_store"
+
+    # Location of the Dockerfile
+    build:
+      context: ./Demo.AllFeatures
+      dockerfile: Dockerfile
+
+    # Set access ports for localhost on the left
+    ports:
+      - "80:5000"
+      - "443:5001"
+
+    # Configure a link to Redis
+    links:
+      - "redis_store"
+
+    # The Application needs a connection string for Redis, this just needs to be the Redis Service name as defined below
+    # Pass it in as an Environmental Variable
+    environment:
+      - RedisConnection=redis_store
+  # Second All Features App
+  api_two:
+    ## Get the image to use and set the container name
+    container_name: api_two
+
+    # State a dependancy on Redis working
+    depends_on:
+      - "redis_store"
+
+    # Location of the Dockerfile
+    build:
+      context: ./Demo.AllFeatures2
+      dockerfile: Dockerfile
+
+    # Set access ports for localhost on the left
+    ports:
+      - "80:5002"
+      - "443:5003"
+
+    # Configure a link to Redis
+    links:
+      - "redis_store"
+
+    # The Application needs a connection string for Redis, this just needs to be the Redis Service name as defined below
+    # Pass it in as an Environmental Variable
+    environment:
+      - RedisConnection=redis_store
+
+  # The Redis Service, this label is required for the "Links" and Connection string
+  redis_store:
+    # Pull the image from Docker Hub
+    image: redis
+
+    # Give the container a name (any name you want)
+    container_name: redis_store
