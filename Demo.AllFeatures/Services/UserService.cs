@@ -31,7 +31,10 @@ public class UserService : IUserService
         //    .Select(prop => new HashEntry(prop.Name, (RedisValue)prop.GetValue(user, null)!))
         //    .ToArray();
 
-        await _db.StringSetAsync($"users:{user.Id}", JsonSerializer.Serialize<User>(user));
+        var newUser = JsonSerializer.Serialize<User>(user);
+
+        await _db.StringSetAsync($"users:{user.Id}",newUser);
+        await _db.PublishAsync("UserRegistration", newUser);
 
         return new UserCreated
         {
