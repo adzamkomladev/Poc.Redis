@@ -34,7 +34,6 @@ public class UserRegisteredHostedService : BackgroundService
         });
     }
 
-
     private async Task HandleRegisteredUser(string message)
     {
         var user = JsonSerializer.Deserialize<RegisteredUser>(message);

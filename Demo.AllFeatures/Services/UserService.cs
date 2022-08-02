@@ -33,8 +33,21 @@ public class UserService : IUserService
 
         var newUser = JsonSerializer.Serialize<User>(user);
 
-        await _db.StringSetAsync($"users:{user.Id}",newUser);
+        await _db.StringSetAsync($"users:{user.Id}", newUser);
         await _db.PublishAsync("UserRegistration", newUser);
+
+        if (!(await _db.KeyExistsAsync("user.visits")) ||
+            (await _db.StreamGroupInfoAsync("user.visits")).All(x => x.Name != "visit.consumers"))
+        {
+            await _db.StreamCreateConsumerGroupAsync("user.visits", "visit.consumers", "0-0", true);
+        }
+
+        await _db.StreamAddAsync("user.visits",
+            new NameValueEntry[]
+            {
+                new("user_id", user.Id),
+                new NameValueEntry("retries", 0)
+            });
 
         return new UserCreated
         {
